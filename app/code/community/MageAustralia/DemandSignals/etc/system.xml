@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <mageaustralia_demandsignals translate="label" module="mageaustralia_demandsignals">
+            <label>Demand Signals</label>
+            <tab>catalog</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>900</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <general translate="label">
+                    <label>General</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <enabled translate="label,comment">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Master toggle. Off = observers no-op, aggregator cron no-op.</comment>
+                        </enabled>
+                        <retention_days translate="label,comment">
+                            <label>Raw event retention (days)</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                            <validate>validate-digits validate-greater-than-zero</validate>
+                            <comment>Raw events auto-pruned after N days. The aggregate table is permanent.</comment>
+                        </retention_days>
+                    </fields>
+                </general>
+                <signals translate="label">
+                    <label>Signals collected</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>20</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <collect_wishlist translate="label">
+                            <label>Wishlist adds</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </collect_wishlist>
+                        <collect_added_to_cart translate="label">
+                            <label>Added to cart</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </collect_added_to_cart>
+                        <collect_cart_abandoned translate="label">
+                            <label>Cart abandoned (daily sweep)</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </collect_cart_abandoned>
+                        <collect_search_no_results translate="label">
+                            <label>Zero-result searches</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </collect_search_no_results>
+                        <collect_oos_view translate="label">
+                            <label>Out-of-stock product views</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </collect_oos_view>
+                    </fields>
+                </signals>
+                <weights translate="label,comment">
+                    <label>Scoring weights</label>
+                    <comment>Composite score for a product/query is event_count * weight summed across signal types. Defaults are plausible starting points only - recalibrate against your catalog.</comment>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>30</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <wishlist translate="label">
+                            <label>Wishlist</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-digits</validate>
+                        </wishlist>
+                        <added_to_cart translate="label">
+                            <label>Added to cart</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-digits</validate>
+                        </added_to_cart>
+                        <cart_abandoned translate="label">
+                            <label>Cart abandoned</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-digits</validate>
+                        </cart_abandoned>
+                        <search_no_results translate="label">
+                            <label>Zero-result search</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-digits</validate>
+                        </search_no_results>
+                        <oos_view translate="label">
+                            <label>OOS view</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-digits</validate>
+                        </oos_view>
+                        <explicit_restock translate="label">
+                            <label>Explicit restock request</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-digits</validate>
+                        </explicit_restock>
+                    </fields>
+                </weights>
+                <cart translate="label">
+                    <label>Cart abandonment</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>40</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <abandon_after_days translate="label,comment">
+                            <label>Abandon after (days)</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-digits validate-greater-than-zero</validate>
+                            <comment>Daily sweep records cart_abandoned for quotes with items that haven't been converted after this many days.</comment>
+                        </abandon_after_days>
+                    </fields>
+                </cart>
+            </groups>
+        </mageaustralia_demandsignals>
+    </sections>
+</config>

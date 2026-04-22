@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <MageAustralia_DemandSignals>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Catalog/>
+                <Mage_Wishlist/>
+                <Mage_CatalogSearch/>
+                <Mage_Checkout/>
+            </depends>
+        </MageAustralia_DemandSignals>
+    </modules>
+</config>

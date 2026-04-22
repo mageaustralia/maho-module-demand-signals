@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# pre-commit guard for documentation hygiene.
+# Blocks commits containing:
+#   1. Em-dash (U+2014) and en-dash (U+2013) - ASCII hyphens only.
+#   2. Live brand name leaks - public OSS repos shouldn't carry
+#      client-specific attribution (see .githooks/config for the list).
+#
+# Scope: files staged for commit. Binary files and everything under
+# node_modules / vendor / test-results / *.png / *.webm / *.zip are skipped.
+#
+# Bypass (use sparingly, e.g. legit en-dash in a foreign quotation):
+#     git commit --no-verify
+#
+# To install in this repo (one-time): git config core.hooksPath .githooks
+set -euo pipefail
+
+RED="\033[0;31m"
+YEL="\033[0;33m"
+GRN="\033[0;32m"
+DIM="\033[2m"
+RST="\033[0m"
+
+# Patterns the hook rejects. Keep each grep-friendly; we match byte-for-byte.
+EMDASH=$'\xe2\x80\x94'   # U+2014
+ENDASH=$'\xe2\x80\x93'   # U+2013
+BRAND_REGEX='(tenniswarehouse|picklewarehouse)'
+
+# Collect staged paths (added/modified/renamed). mapfile/readarray needs
+# bash 4+, macOS ships bash 3, so use a pipe-safe while loop.
+fail=0
+while IFS= read -r path; do
+    [[ -z "$path" ]] && continue
+    [[ ! -f "$path" ]] && continue
+
+    # Skip noise paths regardless of where they appear in the tree.
+    # .githooks/ itself is exempt: the hook file literally contains the
+    # char sequences it bans (as string constants + error labels), so
+    # scanning itself would be a self-own.
+    case "$path" in
+        .githooks/*|*/.githooks/*) continue ;;
+        node_modules/*|*/node_modules/*) continue ;;
+        vendor/*|*/vendor/*) continue ;;
+        test-results/*|*/test-results/*) continue ;;
+        playwright-report/*|*/playwright-report/*) continue ;;
+        screenshots/*|*/screenshots/*) continue ;;
+        *.png|*.jpg|*.jpeg|*.gif|*.webp|*.svg|*.ico) continue ;;
+        *.webm|*.mp4|*.mov|*.zip|*.tar|*.gz) continue ;;
+        *.lock|package-lock.json|composer.lock) continue ;;
+    esac
+
+    # Em-dash / en-dash check.
+    if grep -nF "$EMDASH" "$path" >/dev/null 2>&1; then
+        echo -e "${RED}[FAIL] em-dash (U+2014) in ${path}:${RST}"
+        grep -nF "$EMDASH" "$path" | sed "s/^/    /" | head -5
+        fail=1
+    fi
+    if grep -nF "$ENDASH" "$path" >/dev/null 2>&1; then
+        echo -e "${RED}[FAIL] en-dash (U+2013) in ${path}:${RST}"
+        grep -nF "$ENDASH" "$path" | sed "s/^/    /" | head -5
+        fail=1
+    fi
+
+    # Brand-name leak check (case-insensitive).
+    if grep -inE "$BRAND_REGEX" "$path" >/dev/null 2>&1; then
+        echo -e "${RED}[FAIL] live brand name leak in ${path}:${RST}"
+        grep -inE "$BRAND_REGEX" "$path" | sed "s/^/    /" | head -5
+        fail=1
+    fi
+done <<< "$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if [[ $fail -ne 0 ]]; then
+    echo
+    echo -e "${YEL}Commit blocked by pre-commit hook.${RST}"
+    echo -e "${DIM}Fix the lines above, or bypass with \`git commit --no-verify\` if you really mean it.${RST}"
+    echo -e "${DIM}Suggested replacements:${RST}"
+    echo -e "${DIM}  em-dash  =>  ' - ' (spaced hyphen) or ', ' or ': ' depending on context${RST}"
+    echo -e "${DIM}  en-dash  =>  '-' for ranges (Mon-Fri)${RST}"
+    echo -e "${DIM}  brand    =>  'a real AU merchant' / 'the dev store' / abstract example${RST}"
+    exit 1
+fi
+
+echo -e "${GRN}[OK] pre-commit hook: clean${RST}"

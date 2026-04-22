@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <report>
+                        <children>
+                            <demandsignals translate="title" module="mageaustralia_demandsignals">
+                                <title>Demand Signals</title>
+                                <sort_order>95</sort_order>
+                            </demandsignals>
+                        </children>
+                    </report>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <mageaustralia_demandsignals translate="title" module="mageaustralia_demandsignals">
+                                        <title>Demand Signals Section</title>
+                                    </mageaustralia_demandsignals>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <MageAustralia_DemandSignals>
+            <version>1.0.0</version>
+        </MageAustralia_DemandSignals>
+    </modules>
+
+    <global>
+        <helpers>
+            <mageaustralia_demandsignals>
+                <class>MageAustralia_DemandSignals_Helper</class>
+            </mageaustralia_demandsignals>
+        </helpers>
+        <blocks>
+            <mageaustralia_demandsignals>
+                <class>MageAustralia_DemandSignals_Block</class>
+            </mageaustralia_demandsignals>
+        </blocks>
+        <models>
+            <mageaustralia_demandsignals>
+                <class>MageAustralia_DemandSignals_Model</class>
+                <resourceModel>mageaustralia_demandsignals_resource</resourceModel>
+            </mageaustralia_demandsignals>
+            <mageaustralia_demandsignals_resource>
+                <class>MageAustralia_DemandSignals_Model_Resource</class>
+                <entities>
+                    <event>
+                        <table>mageaustralia_demandsignals_event</table>
+                    </event>
+                    <aggregate>
+                        <table>mageaustralia_demandsignals_aggregate</table>
+                    </aggregate>
+                </entities>
+            </mageaustralia_demandsignals_resource>
+        </models>
+        <resources>
+            <mageaustralia_demandsignals_setup>
+                <setup>
+                    <module>MageAustralia_DemandSignals</module>
+                    <class>Mage_Core_Model_Resource_Setup</class>
+                </setup>
+            </mageaustralia_demandsignals_setup>
+        </resources>
+        <events>
+            <wishlist_add_product>
+                <observers>
+                    <mageaustralia_demandsignals_wishlist>
+                        <class>mageaustralia_demandsignals/observer</class>
+                        <method>onWishlistAdd</method>
+                    </mageaustralia_demandsignals_wishlist>
+                </observers>
+            </wishlist_add_product>
+            <checkout_cart_product_add_after>
+                <observers>
+                    <mageaustralia_demandsignals_cart>
+                        <class>mageaustralia_demandsignals/observer</class>
+                        <method>onCartAdd</method>
+                    </mageaustralia_demandsignals_cart>
+                </observers>
+            </checkout_cart_product_add_after>
+            <catalogsearch_query_save_after>
+                <observers>
+                    <mageaustralia_demandsignals_search>
+                        <class>mageaustralia_demandsignals/observer</class>
+                        <method>onSearchQuerySave</method>
+                    </mageaustralia_demandsignals_search>
+                </observers>
+            </catalogsearch_query_save_after>
+            <catalog_controller_product_view>
+                <observers>
+                    <mageaustralia_demandsignals_product_view>
+                        <class>mageaustralia_demandsignals/observer</class>
+                        <method>onProductView</method>
+                    </mageaustralia_demandsignals_product_view>
+                </observers>
+            </catalog_controller_product_view>
+        </events>
+    </global>
+
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <mageaustralia_demandsignals after="Mage_Adminhtml">MageAustralia_DemandSignals_Adminhtml</mageaustralia_demandsignals>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+
+    <adminhtml>
+        <menu>
+            <report>
+                <children>
+                    <mageaustralia_demandsignals translate="title" module="mageaustralia_demandsignals">
+                        <title>Demand Signals</title>
+                        <sort_order>95</sort_order>
+                        <children>
+                            <top_products translate="title">
+                                <title>Top Demand-signal Products</title>
+                                <action>adminhtml/demandsignals_report/products</action>
+                                <sort_order>10</sort_order>
+                            </top_products>
+                            <unmet_search translate="title">
+                                <title>Unmet Search Demand</title>
+                                <action>adminhtml/demandsignals_report/search</action>
+                                <sort_order>20</sort_order>
+                            </unmet_search>
+                        </children>
+                    </mageaustralia_demandsignals>
+                </children>
+            </report>
+        </menu>
+        <translate>
+            <modules>
+                <MageAustralia_DemandSignals>
+                    <files>
+                        <default>MageAustralia_DemandSignals.csv</default>
+                    </files>
+                </MageAustralia_DemandSignals>
+            </modules>
+        </translate>
+        <layout>
+            <updates>
+                <mageaustralia_demandsignals>
+                    <file>mageaustralia_demandsignals.xml</file>
+                </mageaustralia_demandsignals>
+            </updates>
+        </layout>
+    </adminhtml>
+
+    <crontab>
+        <jobs>
+            <!-- Hourly rollup: collapse last 2 hours of raw events into
+                 aggregates for the current period bucket. Idempotent via
+                 select-then-upsert; safe to re-run. -->
+            <mageaustralia_demandsignals_rollup>
+                <schedule>
+                    <cron_expr>10 * * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>mageaustralia_demandsignals/aggregator::rollupHourly</model>
+                </run>
+            </mageaustralia_demandsignals_rollup>
+            <!-- Daily: cart-abandoned scan + retention prune. -->
+            <mageaustralia_demandsignals_daily>
+                <schedule>
+                    <cron_expr>30 3 * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>mageaustralia_demandsignals/aggregator::runDaily</model>
+                </run>
+            </mageaustralia_demandsignals_daily>
+        </jobs>
+    </crontab>
+
+    <default>
+        <mageaustralia_demandsignals>
+            <general>
+                <enabled>1</enabled>
+                <retention_days>90</retention_days>
+            </general>
+            <signals>
+                <collect_wishlist>1</collect_wishlist>
+                <collect_added_to_cart>1</collect_added_to_cart>
+                <collect_cart_abandoned>1</collect_cart_abandoned>
+                <collect_search_no_results>1</collect_search_no_results>
+                <collect_oos_view>1</collect_oos_view>
+            </signals>
+            <weights>
+                <!-- Weighted sum into the composite demand score. Defaults
+                     plausible, not empirical - expect to recalibrate from
+                     real data. -->
+                <wishlist>3</wishlist>
+                <added_to_cart>2</added_to_cart>
+                <cart_abandoned>5</cart_abandoned>
+                <search_no_results>2</search_no_results>
+                <oos_view>1</oos_view>
+                <explicit_restock>10</explicit_restock>
+            </weights>
+            <cart>
+                <abandon_after_days>7</abandon_after_days>
+            </cart>
+        </mageaustralia_demandsignals>
+    </default>
+</config>
