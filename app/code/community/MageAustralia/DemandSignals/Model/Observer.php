@@ -102,24 +102,20 @@ class MageAustralia_DemandSignals_Model_Observer
             if (!$product instanceof Mage_Catalog_Model_Product) {
                 return;
             }
-            // "Unbuyable" view = OOS signal. Three paths lead here:
-            //   - stock item marked out of stock (simple products)
-            //   - product status disabled (pulled from sale)
-            //   - catalog inventory says not salable (composite / configurable
-            //     products whose children are all OOS - getStockItem() on
-            //     the parent returns null)
-            // Any in-stock + enabled + salable view is ordinary noise.
+            // "Unbuyable" view = OOS signal. Any of the following qualifies:
+            //   - stock item says out of stock (simple products)
+            //   - stock item is missing (composite / configurable - Maho
+            //     returns null on the parent; the previous version treated
+            //     this as in-stock, which was wrong-direction)
+            //   - isSalable() false (all children OOS, etc.)
+            //   - product status disabled
+            // Ordinary noise = in-stock AND enabled AND salable.
             $stockItem = $product->getStockItem();
             $stockSaysInStock = $stockItem ? (bool) $stockItem->getIsInStock() : null;
             $statusEnabled = ((int) $product->getStatus()) === 1;
             $isSalable = (bool) $product->isSalable();
 
             if ($stockSaysInStock === true && $statusEnabled && $isSalable) {
-                return;
-            }
-            // If stock item is missing (composite) and the product is both
-            // enabled and salable, we have no signal to record.
-            if ($stockSaysInStock === null && $statusEnabled && $isSalable) {
                 return;
             }
 

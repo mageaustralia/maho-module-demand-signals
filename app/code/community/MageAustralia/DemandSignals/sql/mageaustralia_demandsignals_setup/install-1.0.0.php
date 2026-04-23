@@ -35,7 +35,7 @@ if (!$connection->isTableExists($eventTable)) {
         ])
         ->addColumn('session_id', Varien_Db_Ddl_Table::TYPE_VARCHAR, 64, [
             'nullable' => true,
-        ])
+        ], 'Truncated SHA-256 of the raw session id (see Helper::hashSessionId). Never the raw PHPSESSID - a leak would otherwise be a session-hijack primitive until the session expires.')
         ->addColumn('weight', Varien_Db_Ddl_Table::TYPE_SMALLINT, null, [
             'unsigned' => true, 'nullable' => false, 'default' => 1,
         ])

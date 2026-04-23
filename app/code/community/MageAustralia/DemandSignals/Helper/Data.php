@@ -66,15 +66,16 @@ class MageAustralia_DemandSignals_Helper_Data extends Mage_Core_Helper_Abstract
     /**
      * Hash a session id before persistence. The raw PHPSESSID is a session
      * hijack primitive if the event log leaks, so we store a truncated
-     * SHA-256 instead. 16 hex chars = 64 bits of entropy, ample for the
-     * dedup/uniqueness use cases the column is there for.
+     * SHA-256 instead. 32 hex chars = 128 bits of entropy, plenty for the
+     * dedup/uniqueness use cases the column is there for and with no
+     * realistic collision risk across retention windows.
      */
     public function hashSessionId(?string $sessionId): ?string
     {
         if ($sessionId === null || $sessionId === '') {
             return null;
         }
-        return substr(hash('sha256', $sessionId), 0, 16);
+        return substr(hash('sha256', $sessionId), 0, 32);
     }
 
     /**

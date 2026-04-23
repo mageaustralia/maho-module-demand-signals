@@ -97,13 +97,13 @@ Two tables:
 | `mageaustralia_demandsignals_event` | raw event log, time-bounded by retention |
 | `mageaustralia_demandsignals_aggregate` | rolled-up per period/entity/signal, permanent |
 
-All DDL via `Varien_Db_Ddl_Table::TYPE_*` constants. Portable across MySQL / MariaDB / PostgreSQL / SQLite. The aggregate `unique_identifier_count` uses `COUNT(DISTINCT CONCAT(...))`, which works on every supported DB.
+All DDL via `Varien_Db_Ddl_Table::TYPE_*` constants. The rollup relies on `insertOnDuplicate` (MariaDB/MySQL's `ON DUPLICATE KEY UPDATE`) and `COUNT(DISTINCT CONCAT(COALESCE(a,0), ':', COALESCE(b,'')))` in the aggregator. Tested on MariaDB 11 and should work on MySQL 8 without changes; PostgreSQL / SQLite are not verified and would need an alternate upsert path.
 
 ### Idempotency
 
 Re-running the aggregator is always safe. The rollup is a `SELECT COUNT(*) GROUP BY ... -> INSERT ON DUPLICATE KEY UPDATE` against a unique key on `(period, entity_type, entity_id, store_id, signal_type)`. No running totals, no state machine.
 
-The cart-abandoned sweep is guarded by a `meta LIKE '%"quote_id":N%'` check before insert, so the same quote never records twice even if the cron double-fires.
+The cart-abandoned sweep is guarded by an exact-equality check against a dedicated indexed `quote_id` column on the event table, so the same quote never records twice even if the cron double-fires. (Earlier 1.0.0 releases used a `meta LIKE` which could false-match prefix-colliding ids like 10 vs 100; the 1.0.1 upgrade migrates to the column.)
 
 ## Observer surface
 

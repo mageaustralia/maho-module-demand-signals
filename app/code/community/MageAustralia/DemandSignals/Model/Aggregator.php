@@ -142,13 +142,14 @@ class MageAustralia_DemandSignals_Model_Aggregator
         foreach ($quotes as $quote) {
             $quoteId = (int) $quote['entity_id'];
 
-            // Have we already recorded this quote? meta is a TEXT JSON
-            // blob so a LIKE keyed on a stable shape is good enough.
+            // Dedup on the dedicated indexed quote_id column. Prior versions
+            // used a LIKE against the meta JSON blob, which falsely matched
+            // 10 against 100/1000. The column is a 1.0.1 upgrade.
             $already = (int) $read->fetchOne(
                 $read->select()
                     ->from($eventTable, [new Varien_Db_Expr('COUNT(*)')])
                     ->where('signal_type = ?', MageAustralia_DemandSignals_Helper_Data::SIGNAL_CART_ABANDONED)
-                    ->where('meta LIKE ?', '%"quote_id":' . $quoteId . '%'),
+                    ->where('quote_id = ?', $quoteId),
             );
             if ($already > 0) {
                 continue;
@@ -162,6 +163,10 @@ class MageAustralia_DemandSignals_Model_Aggregator
             );
 
             foreach ($items as $item) {
+                $metaJson = json_encode(
+                    ['quote_id' => $quoteId, 'qty' => (float) $item['qty']],
+                    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+                );
                 $write->insert($eventTable, [
                     'signal_type' => MageAustralia_DemandSignals_Helper_Data::SIGNAL_CART_ABANDONED,
                     'entity_type' => 'product',
@@ -170,15 +175,13 @@ class MageAustralia_DemandSignals_Model_Aggregator
                     'store_id'    => (int) $quote['store_id'],
                     'customer_id' => $quote['customer_id'] ? (int) $quote['customer_id'] : null,
                     'session_id'  => null,
+                    'quote_id'    => $quoteId,
                     'weight'      => $helper->weightFor(
                         MageAustralia_DemandSignals_Helper_Data::SIGNAL_CART_ABANDONED,
                         (int) $quote['store_id'],
                     ),
                     'created_at'  => gmdate('Y-m-d H:i:s'),
-                    'meta'        => json_encode([
-                        'quote_id' => $quoteId,
-                        'qty'      => (float) $item['qty'],
-                    ], JSON_THROW_ON_ERROR),
+                    'meta'        => $metaJson === false ? null : $metaJson,
                 ]);
             }
         }
