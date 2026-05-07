@@ -13,6 +13,7 @@ class MageAustralia_DemandSignals_Adminhtml_Demandsignals_ReportController exten
         return Mage::getSingleton('admin/session')->isAllowed('report/demandsignals');
     }
 
+    #[\Maho\Config\Route('/admin/demandsignals_report/products')]
     public function productsAction(): void
     {
         $this->loadLayout();
@@ -26,6 +27,7 @@ class MageAustralia_DemandSignals_Adminhtml_Demandsignals_ReportController exten
         $this->renderLayout();
     }
 
+    #[\Maho\Config\Route('/admin/demandsignals_report/search')]
     public function searchAction(): void
     {
         $this->loadLayout();
