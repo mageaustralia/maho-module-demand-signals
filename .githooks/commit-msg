@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# commit-msg guard for documentation hygiene.
+# Mirror of the pre-commit content checks, but scoped to the commit message itself.
+# Blocks commit messages containing:
+#   1. Em-dash (U+2014) and en-dash (U+2013) - ASCII hyphens only.
+#   2. Live brand name leaks - public OSS repo commit messages shouldn't
+#      carry client-specific attribution either, even when describing
+#      provenance ("flagged by the X strict run", "captured on X staging").
+#
+# Bypass (use sparingly): git commit --no-verify
+#
+# To install in this repo (one-time): git config core.hooksPath .githooks
+set -euo pipefail
+
+RED="\033[0;31m"
+YEL="\033[0;33m"
+GRN="\033[0;32m"
+DIM="\033[2m"
+RST="\033[0m"
+
+MSG_FILE="$1"
+
+# Same byte sequences and brand regex as the pre-commit hook so the rules stay
+# in lock-step. If you update one, update the other.
+EMDASH=$'\xe2\x80\x94'   # U+2014
+ENDASH=$'\xe2\x80\x93'   # U+2013
+BRAND_REGEX='(tenniswarehouse|picklewarehouse)'
+
+# Ignore comment lines git adds for --verbose / template; only check the
+# author's actual content.
+PAYLOAD=$(grep -v '^#' "$MSG_FILE")
+
+fail=0
+
+if printf '%s' "$PAYLOAD" | grep -qF "$EMDASH"; then
+    echo -e "${RED}[FAIL] em-dash (U+2014) in commit message:${RST}"
+    printf '%s' "$PAYLOAD" | grep -n -F "$EMDASH" | sed "s/^/    /" | head -3
+    fail=1
+fi
+
+if printf '%s' "$PAYLOAD" | grep -qF "$ENDASH"; then
+    echo -e "${RED}[FAIL] en-dash (U+2013) in commit message:${RST}"
+    printf '%s' "$PAYLOAD" | grep -n -F "$ENDASH" | sed "s/^/    /" | head -3
+    fail=1
+fi
+
+if printf '%s' "$PAYLOAD" | grep -inE "$BRAND_REGEX" >/dev/null 2>&1; then
+    echo -e "${RED}[FAIL] live brand name leak in commit message:${RST}"
+    printf '%s' "$PAYLOAD" | grep -inE "$BRAND_REGEX" | sed "s/^/    /" | head -3
+    fail=1
+fi
+
+if [[ $fail -ne 0 ]]; then
+    echo
+    echo -e "${YEL}Commit blocked by commit-msg hook.${RST}"
+    echo -e "${DIM}Edit the message (git commit --amend) or bypass with --no-verify if you really mean it.${RST}"
+    echo -e "${DIM}Provenance line examples that pass:${RST}"
+    echo -e "${DIM}  'flagged by a downstream strict PHPStan run' (not site-named)${RST}"
+    echo -e "${DIM}  'captured on a staging install' (not site-named)${RST}"
+    echo -e "${DIM}  'tested on the dev install'${RST}"
+    exit 1
+fi
+
+echo -e "${GRN}[OK] commit-msg hook: clean${RST}"
