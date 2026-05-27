@@ -2,7 +2,7 @@
     "name": "mageaustralia/maho-module-demand-signals",
     "description": "Aggregate implicit demand signals for Maho: wishlist adds, abandoned carts, zero-result searches, OOS views. Not a restock alert system - a merchandising report that surfaces what customers want that you don't have. Free + OSS.",
     "type": "maho-module",
-    "license": "BSD-2-Clause",
+    "license": "OSL-3.0",
     "keywords": ["maho", "merchandising", "analytics", "signals", "wishlist", "cart-abandonment", "search-analytics"],
     "authors": [
         {

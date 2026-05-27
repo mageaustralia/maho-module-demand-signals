@@ -11,7 +11,7 @@ A merchandising report for Maho / OpenMage. Captures four implicit demand signal
 
 Optionally: `explicit_restock` signals when you bolt on a "Notify me when back in stock" button (the schema supports it; the UI hook is your call).
 
-**Free, OSS (BSD-2-Clause).** No SaaS, no phone-home, no licence key. Data stays in your DB.
+**Free, OSS (OSL-3.0).** No SaaS, no phone-home, no licence key. Data stays in your DB.
 
 ## What this is not
 
