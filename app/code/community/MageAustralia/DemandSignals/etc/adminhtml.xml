@@ -1,5 +1,27 @@
 <?xml version="1.0"?>
 <config>
+    <menu>
+        <report>
+            <children>
+                <mageaustralia_demandsignals translate="title" module="mageaustralia_demandsignals">
+                    <title>Demand Signals</title>
+                    <sort_order>95</sort_order>
+                    <children>
+                        <top_products translate="title">
+                            <title>Top Demand-signal Products</title>
+                            <action>adminhtml/demandsignals_report/products</action>
+                            <sort_order>10</sort_order>
+                        </top_products>
+                        <unmet_search translate="title">
+                            <title>Unmet Search Demand</title>
+                            <action>adminhtml/demandsignals_report/search</action>
+                            <sort_order>20</sort_order>
+                        </unmet_search>
+                    </children>
+                </mageaustralia_demandsignals>
+            </children>
+        </report>
+    </menu>
     <acl>
         <resources>
             <admin>
